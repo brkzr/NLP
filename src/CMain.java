@@ -6,17 +6,24 @@ public class CMain{
 
 	/**
 	 * @param args
-	 *           DENEME
-	 * deneme barış xyz
+	 * 
 	 */
 	static List<String>	kisaltma	= new ArrayList<String>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		String cumle = "Ben 2006 yılında Yıldız Teknik Üniversitesi Bilgisayar Mühendisliğinden" + " mezun oldum. Aynı yol YTÜ de yüksek lisansa başladım. şu an doktoramı" + " bitirmiş durumdayım. İmzamı atarken Dr. Ali Savaş diye yazıyorum. " + "Doktora sonrası New York'a gittim. NY Üniversitesinden kabul aldım. " + "Bundan sonra TC vatandaşı olduğum halde USA'de yaşayacağım.";
-
-		String[] parts = cumle.split(" ");
+		String cumle = 	"Ben 2006 yılında Yıldız Teknik Üniversitesi Bilgisayar Mühendisliğinden" + 
+						" mezun oldum. Aynı yol YTÜ de yüksek lisansa başladım. şu an doktoramı" + 
+						" bitirmiş durumdayım. İmzamı atarken Dr. Ali Savaş diye yazıyorum. " + 
+						"Doktora sonrası New York'a gittim. NY Üniversitesinden kabul aldım. " + 
+						"Bundan sonra TC vatandaşı olduğum halde USA'de yaşayacağım.";
+		
+		//nokta virgül ayraç ... ve boşluk a göre parçalama işlemi (USA'de örneği)
+		String delimiters = "[ .,;']+";
+		String[] parts = cumle.split(delimiters);
+		
+		//String[] parts = cumle.split(" ");
 		System.out.println("Uzunluk : " + parts.length);
 		int[] isCapital = new int[parts.length];
 
