@@ -6,6 +6,7 @@ public class CMain{
 
 	/**
 	 * @param args
+	 *           DENEME
 	 */
 	static List<String>	kisaltma	= new ArrayList<String>();
 
