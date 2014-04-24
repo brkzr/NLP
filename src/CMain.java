@@ -7,6 +7,7 @@ public class CMain{
 	/**
 	 * @param args
 	 *           DENEME
+	 * deneme barış xyz
 	 */
 	static List<String>	kisaltma	= new ArrayList<String>();
 
