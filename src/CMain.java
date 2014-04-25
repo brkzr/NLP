@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CMain{
 
@@ -13,16 +15,12 @@ public class CMain{
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		String cumle = 	"Ben 2006 yılında Yıldız Teknik Üniversitesi Bilgisayar Mühendisliğinden" + 
-						" mezun oldum. Aynı yol YTÜ de yüksek lisansa başladım. şu an doktoramı" + 
-						" bitirmiş durumdayım. İmzamı atarken Dr. Ali Savaş diye yazıyorum. " + 
-						"Doktora sonrası New York'a gittim. NY Üniversitesinden kabul aldım. " + 
-						"Bundan sonra TC vatandaşı olduğum halde USA'de yaşayacağım.";
-		
+		String cumle = "Ben 2006 yılında Yıldız Teknik Üniversitesi Bilgisayar Mühendisliğinden" + " mezun oldum. Aynı yol YTÜ de yüksek lisansa başladım. şu an doktoramı" + " bitirmiş durumdayım. İmzamı atarken Dr. Ali Savaş diye yazıyorum. " + "Doktora sonrası New York'a gittim. NY Üniversitesinden kabul aldım. " + "Bundan sonra TC vatandaşı olduğum halde USA'de yaşayacağım.";
+
 		//nokta virgül ayraç ... ve boşluk a göre parçalama işlemi (USA'de örneği)
 		String delimiters = "[ .,;']+";
 		String[] parts = cumle.split(delimiters);
-		
+
 		//String[] parts = cumle.split(" ");
 		System.out.println("Uzunluk : " + parts.length);
 		int[] isCapital = new int[parts.length];
@@ -39,7 +37,11 @@ public class CMain{
 			System.out.println("Kısaltma : " + i);
 		}
 
-	}
+		for (String sentence : kisaltma) {
+			findComplateSenstenceForAbbreviation(cumle, sentence);
+		}
+
+	}//END_OF_MAIN
 
 	public static void findCapital(String[] sentence,int[] index) {
 
@@ -75,6 +77,26 @@ public class CMain{
 			i++;
 		}
 
+	}
+
+	public static void findComplateSenstenceForAbbreviation(String text,String abbreviation) {
+
+		String regex = "[ ]+";
+		for (int i = 0; i < abbreviation.length(); i++) {
+			if (i == 0) {
+				regex += "([" + abbreviation.charAt(i) + "][a-z|ı|ü|ş|ç|ğ|ö]*)";
+			} else if (i == abbreviation.length() - 1) {
+				regex += "( [" + abbreviation.charAt(i) + "][a-z|ı|ü|ş|ç|ğ|ö]*)";
+			} else {
+				regex += "(( [a-z|ı|ü|ş|ç|ğ|ö]*)* [" + abbreviation.charAt(i) + "][a-z|ı|ü|ş|ç|ğ|ö]*)?";
+			}
+		}
+		//System.out.println("REGEX => " + regex);
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(text);
+		while (matcher.find()) {
+			System.out.println("O.K. For : " + abbreviation + " => " + matcher.group());
+		}
 	}
 
 }
