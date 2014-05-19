@@ -23,9 +23,9 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Kısaltma</th>
+                  <th>Kısaltmalar</th>
                   <th>Nerede Bulundu</th>
-                  <th>Uzun Hali</th>
+                  <th>Uzun Hali Olabilicek Kelimeler</th>
                 </tr>
               </thead>
               <tbody>'; }
@@ -38,6 +38,7 @@
       $kisaltma = array(); //global array
       $long = array();     //global array
       $short = array();    //global array
+      $index = 0;          //global variable
 
       if(isset($_GET['text1'] )){
 
@@ -58,7 +59,7 @@
 
         //kısaltmanın uzun halini text içinde arama
         function findComplateSenstenceForAbbreviation($text,$abbreviation){
-
+          GLOBAL $index;
           $k= 0;
           $uzun ="";
 
@@ -66,18 +67,23 @@
             
             for ($i=0; $i < mb_strlen($abbreviation,'utf-8'); $i++) {
               $rest = mb_substr($abbreviation,$i,1,'utf-8');
+              $temp3 = count($text);
 
-              if($rest == mb_substr($text[$j+$k],0,1,'utf-8')){
+              if(($j+$k)<$temp3){
+                if($rest == mb_substr($text[$j+$k],0,1,'utf-8')){
 
-                $uzun .= $text[$j+$k]." ";
-                $k++;            
+                  $uzun .= $text[$j+$k]." ";
+                  $k++;            
               }
+            }
             }
             if($k == mb_strlen($abbreviation,'utf-8')){
               GLOBAL $long;
-              $long[]=$uzun;
+              //echo $uzun;
+              $long[$index]=$uzun;
               GLOBAL $short;
-              $short[]=$abbreviation;
+              $short[$index]=$abbreviation;
+              $index++;
             }
             $uzun ="";
             $k=0;
@@ -104,29 +110,34 @@
         //fonksiyon çağrıldı
         isAbbrevation($parts,$isCapital);
 
+        $unique = array_unique($kisaltma);
+        
         //fonksiyon çağrıldı
-        foreach ($kisaltma as $key) {
+        foreach ($unique as $key) {
           findComplateSenstenceForAbbreviation($parts,$key);
         }  
 
         //print_r($long);
-        //echo $long[1];
         //print_r($short);
+        $temp ="";
 
+        //buraya tekrar bakılacak 
         for ($i=0; $i <count($kisaltma) ; $i++) { 
-          $temp = "#";
-          if(isset($long[$i])){
-            $temp2 = (string) $short[$i];
-            if(strcmp($kisaltma[$i],$short[$i])==0){
-              $temp = $long[$i];
-            }
+          for ($j=0; $j < count($long) ; $j++) { 
+
+            if(strcmp($kisaltma[$i],$short[$j])==0){
+              $temp .= "$long[$j] - ";
+              //echo "$long[$j] <br>";
+            }            
           }
+
           echo "<tr>
                   <td>$i</td>
                   <td>$kisaltma[$i]</td>
                   <td>Metin içinde</td>
                   <td>$temp</td>
-                </tr>";
+                </tr>"; 
+          $temp = "";         
         }
 
       }
