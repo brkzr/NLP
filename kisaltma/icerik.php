@@ -32,13 +32,15 @@
 ?>
 
 
-    <?php 
+    <?php
 
       setlocale(LC_ALL, 'tr_TR.UTF-8'); //türkçeye ayarladık
       $kisaltma = array(); //global array
       $long = array();     //global array
       $short = array();    //global array
       $index = 0;          //global variable
+      $abbreviationQuery =array();  //global array
+      $sentenceQuery =array();      //global array
 
       if(isset($_GET['text1'] )){
 
@@ -58,39 +60,42 @@
         }//end-func
 
         //kısaltmanın uzun halini text içinde arama
-        function findComplateSenstenceForAbbreviation($text,$abbreviation){
+        function findComplateSenstenceForAbbreviation ($abbreviation){
           GLOBAL $index;
-          $k= 0;
-          $uzun ="";
+          GLOBAL $abbreviationQuery;
+          GLOBAL $sentenceQuery;
+          GLOBAL $cumle;
+          GLOBAL $con;
 
-          for ($j=0; $j <count($text) ; $j++) { 
-            
-            for ($i=0; $i < mb_strlen($abbreviation,'utf-8'); $i++) {
-              $rest = mb_substr($abbreviation,$i,1,'utf-8');
-              $temp3 = count($text);
-
-              if(($j+$k)<$temp3){
-                if($rest == mb_substr($text[$j+$k],0,1,'utf-8')){
-
-                  $uzun .= $text[$j+$k]." ";
-                  $k++;            
-              }
-            }
-            }
-            if($k == mb_strlen($abbreviation,'utf-8')){
-              GLOBAL $long;
-              //echo $uzun;
-              $long[$index]=$uzun;
-              GLOBAL $short;
-              $short[$index]=$abbreviation;
-              $index++;
-            }
-            $uzun ="";
-            $k=0;
+          $regex = "/[ ]";
+          for ($i=0; $i < mb_strlen($abbreviation,'utf-8'); $i++) { 
+            if($i==0) {
+              $regex .= "([".mb_substr($abbreviation,$i,1,'utf-8')."][a-z|ı|ü|ş|ç|ğ|ö]*)";
+            } else if ($i ==  mb_strlen($abbreviation,'utf-8') - 1) { 
+               $regex .= "(( [a-z|ı|ü|ş|ç|ğ|ö]*)* [".mb_substr($abbreviation,$i,1,'utf-8')."][a-z|ı|ü|ş|ç|ğ|ö|.]*)";
+            } else { 
+               $regex .= "(( [a-z|ı|ü|ş|ç|ğ|ö]*)* [".mb_substr($abbreviation,$i,1,'utf-8')."][a-z|ı|ü|ş|ç|ğ|ö|.]*)?"; 
+              }               
           }
-        }//END -FUNC
+
+          $regex .="/u";
+          $matches =0;
+
+          //regex execution 
+          preg_match_all($regex,$cumle,$matches);
+          //print_r($matches[0]);
+
+          foreach ($matches[0] as $value) {
+            GLOBAL $long;
+            $long[$index]=$value;;
+            GLOBAL $short;
+            $short[$index]=$abbreviation;
+            $index++;
+          }
+        }
         
-        $cumle = $_GET['text1'];
+        $cumle = "æ ";
+        $cumle .= $_GET['text1'];
         //cümleleri ayıran regex
         $parts = spliti("[ .',;]+", $cumle);
 
@@ -105,7 +110,7 @@
             }
             $i ++;
           }
-        }
+        } // END-FUNC
 
         //fonksiyon çağrıldı
         isAbbrevation($parts,$isCapital);
@@ -114,34 +119,70 @@
         
         //fonksiyon çağrıldı
         foreach ($unique as $key) {
-          findComplateSenstenceForAbbreviation($parts,$key);
+          findComplateSenstenceForAbbreviation($key);
         }  
 
-        //print_r($long);
-        //print_r($short);
         $temp ="";
+        $m=0;
 
         //buraya tekrar bakılacak 
         for ($i=0; $i <count($kisaltma) ; $i++) { 
           for ($j=0; $j < count($long) ; $j++) { 
 
             if(strcmp($kisaltma[$i],$short[$j])==0){
-              $temp .= "$long[$j] - ";
+              $temp .= "$long[$j] <br>";
               //echo "$long[$j] <br>";
             }            
           }
-
           echo "<tr>
                   <td>$i</td>
                   <td>$kisaltma[$i]</td>
                   <td>Metin içinde</td>
                   <td>$temp</td>
                 </tr>"; 
-          $temp = "";         
+          $temp = ""; 
+          $m=$i;        
         }
+
+        //DB Conncection
+        $conn = mysql_connect("localhost","root","") or die(mysql_error());
+        mysql_select_db("nlp") or die(mysql_error());
+
+        //türkçe karakter çekme problemi çözüldü
+        mysql_set_charset('utf8', $conn);
+
+        // Get all the data from the "example" table
+        for ($i=0; $i <count($parts); $i++) { 
+          
+          //sorgudaki binasy SQL de case sensetive i aktif eder.
+          $result = mysql_query("SELECT * FROM list WHERE binary abbreviation =\"".$parts[$i]."\"") or die(mysql_error());  
+
+          while($row = mysql_fetch_array($result)) {
+            $abbreviationQuery[]= $row['abbreviation'];
+            $sentenceQuery[]= $row['sentence'];
+          }          
+        }
+
+        mysql_close($conn);
+ 
+        //--------------------------------------------------
+        for ($i=0; $i <count($abbreviationQuery) ; $i++) { 
+        $m ++;
+
+          echo "<tr>
+                  <td>$m</td>
+                  <td>$abbreviationQuery[$i]</td>
+                  <td>Veri Tabanı</td>
+                  <td>$sentenceQuery[$i]</td>
+                </tr>";             
+        }
+       //--------------------------------------------------
 
       }
     ?>
+
+
+
 
     <?php if(isset($_GET['text1'] )){
           echo  '</tbody>
